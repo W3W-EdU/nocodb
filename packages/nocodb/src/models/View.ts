@@ -109,7 +109,6 @@ export default class View implements ViewType {
   show_system_fields?: boolean;
   meta?: any;
   fk_custom_url_id?: string;
-  custom_url_path?: string;
 
   constructor(data: View) {
     Object.assign(this, data);
@@ -1254,6 +1253,7 @@ export default class View implements ViewType {
       MetaTable.VIEWS,
       {
         uuid: null,
+        fk_custom_url_id: null,
       },
       viewId,
     );
@@ -1262,6 +1262,7 @@ export default class View implements ViewType {
 
     await NocoCache.update(`${CacheScope.VIEW}:${viewId}`, {
       uuid: null,
+      fk_custom_url_id: null,
     });
   }
 
