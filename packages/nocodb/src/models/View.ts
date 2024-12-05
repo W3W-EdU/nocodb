@@ -45,7 +45,7 @@ import {
   prepareForResponse,
   stringifyMetaProp,
 } from '~/utils/modelUtils';
-import { LinkToAnotherRecordColumn, CustomUrl } from '~/models';
+import { CustomUrl, LinkToAnotherRecordColumn } from '~/models';
 import { cleanCommandPaletteCache } from '~/helpers/commandPaletteHelpers';
 import { isEE } from '~/utils';
 
