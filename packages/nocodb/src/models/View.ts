@@ -48,6 +48,7 @@ import {
 import { LinkToAnotherRecordColumn } from '~/models';
 import { cleanCommandPaletteCache } from '~/helpers/commandPaletteHelpers';
 import { isEE } from '~/utils';
+import CustomUrl from './CustomUrl';
 
 const { v4: uuidv4 } = require('uuid');
 
@@ -108,6 +109,7 @@ export default class View implements ViewType {
   source_id?: string;
   show_system_fields?: boolean;
   meta?: any;
+  fk_custom_url_id?: string;
 
   constructor(data: View) {
     Object.assign(this, data);
@@ -1254,6 +1256,8 @@ export default class View implements ViewType {
       viewId,
     );
 
+    await CustomUrl.delete(context, { view_id: viewId });
+
     await NocoCache.update(`${CacheScope.VIEW}:${viewId}`, {
       uuid: null,
     });
@@ -1274,6 +1278,7 @@ export default class View implements ViewType {
       created_by?: string;
       expanded_record_mode?: ExpandedFormModeType;
       attachment_mode_column_id?: string;
+      fk_custom_url_id?: string;
     },
     includeCreatedByAndUpdateBy = false,
     ncMeta = Noco.ncMeta,
@@ -1287,6 +1292,7 @@ export default class View implements ViewType {
       'password',
       'meta',
       'uuid',
+      'fk_custom_url_id',
       ...(includeCreatedByAndUpdateBy ? ['owned_by', 'created_by'] : []),
       ...(isEE ? ['expanded_record_mode', 'attachment_mode_column_id'] : []),
     ]);
@@ -1424,6 +1430,11 @@ export default class View implements ViewType {
         });
       }
     }
+
+    if (view.fk_custom_url_id) {
+      await CustomUrl.delete(context, { id: view.fk_custom_url_id });
+    }
+
     // on update, delete any optimised single query cache
     await View.clearSingleQueryCache(context, view.fk_model_id, [view], ncMeta);
 
