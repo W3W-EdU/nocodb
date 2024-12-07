@@ -498,7 +498,7 @@ useActiveKeyupListener(
       }
     }
   },
-  { immediate: true },
+  { immediate: true, isGridCell: false },
 )
 
 const showDeleteRowModal = ref(false)
