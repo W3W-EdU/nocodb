@@ -238,7 +238,7 @@ const uiTypesOptions = computed<typeof uiTypes>(() => {
   return types
 })
 
-const onSelectType = (uidt: UITypes | typeof AIButton, fromSearchList = false) => {
+const onSelectType = (uidt: UITypes | typeof AIButton | typeof AIPrompt, fromSearchList = false) => {
   let preload
 
   if (fromSearchList && !isEdit.value && aiAutoSuggestMode.value) {
@@ -249,6 +249,13 @@ const onSelectType = (uidt: UITypes | typeof AIButton, fromSearchList = false) =
     formState.value.uidt = UITypes.Button
     preload = {
       type: ButtonActionsType.Ai,
+    }
+  } else if (uidt === AIPrompt) {
+    formState.value.uidt = UITypes.LongText
+    preload = {
+      meta: {
+        [LongTextAiMetaProp]: true,
+      },
     }
   } else {
     formState.value.uidt = uidt
@@ -582,6 +589,12 @@ const isAiButtonSelectOption = (uidt: string) => {
   return uidt === UITypes.Button && formState.value.uidt === UITypes.Button && formState.value.type === ButtonActionsType.Ai
 }
 
+const isAiPromptSelectOption = (uidt: string) => {
+  return (
+    uidt === UITypes.LongText && formState.value.uidt === UITypes.LongText && formState.value.meta?.[LongTextAiMetaProp] === true
+  )
+}
+
 const aiPromptInputRef = ref<HTMLElement>()
 
 watch(activeAiTab, (newValue) => {
@@ -606,6 +619,7 @@ watch(activeAiTab, (newValue) => {
       'min-w-[422px] !w-full': isLinksOrLTAR(formState.uidt),
       'shadow-lg shadow-gray-300 border-1 border-gray-200 rounded-xl p-5': !embedMode,
       'nc-ai-mode': isAiMode,
+      'min-w-[446px]': formState.uidt === UITypes.LongText && formState.meta?.[LongTextAiMetaProp] === true,
       'h-full': props.fromTableExplorer,
       '!bg-nc-bg-gray-extralight': aiAutoSuggestMode && formState.uidt && !props.fromTableExplorer,
     }"
@@ -927,7 +941,7 @@ watch(activeAiTab, (newValue) => {
                 type="primary"
                 theme="ai"
                 :loading="saving"
-                :disabled="disableSubmitBtn || !activeTabSelectedFields.length || saving"
+                :disabled="disableSubmitBtn || saving"
                 size="small"
                 :label="submitBtnLabel.label"
                 :loading-label="submitBtnLabel.loadingLabel"
@@ -1041,14 +1055,20 @@ watch(activeAiTab, (newValue) => {
                 v-bind="validateInfos.uidt"
                 :class="{
                   'ant-select-item-option-active-selected': showHoverEffectOnSelectedType && formState.uidt === opt.name,
-                  '!text-nc-content-purple-dark': [AIButton].includes(opt.name),
+                  '!text-nc-content-purple-dark': [AIPrompt, AIButton].includes(opt.name),
                 }"
                 @mouseover="handleResetHoverEffect"
               >
                 <div class="w-full flex gap-2 items-center justify-between" :data-testid="opt.name" :data-title="formState?.type">
                   <div class="flex-1 flex gap-2 items-center max-w-[calc(100%_-_24px)]">
                     <component
-                      :is="isAiButtonSelectOption(opt.name) && !isColumnTypeOpen ? iconMap.cellAiButton : opt.icon"
+                      :is="
+                        isAiButtonSelectOption(opt.name) && !isColumnTypeOpen
+                          ? iconMap.cellAiButton
+                          : isAiPromptSelectOption(opt.name) && !isColumnTypeOpen
+                          ? iconMap.cellAi
+                          : opt.icon
+                      "
                       class="nc-field-type-icon w-4 h-4"
                       :class="isMetaReadOnly && !readonlyMetaAllowedTypes.includes(opt.name) ? 'text-gray-300' : 'text-gray-700'"
                     />
@@ -1109,7 +1129,11 @@ watch(activeAiTab, (newValue) => {
         <SmartsheetColumnQrCodeOptions v-if="formState.uidt === UITypes.QrCode" v-model="formState" />
         <SmartsheetColumnBarcodeOptions v-if="formState.uidt === UITypes.Barcode" v-model="formState" />
         <SmartsheetColumnCurrencyOptions v-if="formState.uidt === UITypes.Currency" v-model:value="formState" />
-        <SmartsheetColumnLongTextOptions v-if="formState.uidt === UITypes.LongText" v-model:value="formState" />
+        <SmartsheetColumnLongTextOptions
+          v-if="formState.uidt === UITypes.LongText"
+          v-model="formState"
+          @navigate-to-integrations="handleNavigateToIntegrations"
+        />
         <SmartsheetColumnDurationOptions v-if="formState.uidt === UITypes.Duration" v-model:value="formState" />
         <SmartsheetColumnRatingOptions v-if="formState.uidt === UITypes.Rating" v-model:value="formState" />
         <SmartsheetColumnCheckboxOptions v-if="formState.uidt === UITypes.Checkbox" v-model:value="formState" />
