@@ -47,7 +47,7 @@ RUN pnpm install --prod --shamefully-hoist \
 ##########
 # Runner
 ##########
-FROM alpine:3.20
+FROM alpine:3.23.2
 WORKDIR /usr/src/app
 
 ENV LITESTREAM_S3_SKIP_VERIFY=false \
